@@ -16,15 +16,15 @@ ENV PGPORT=5432
 # NOTA: usamos $PGDATABASE para que la inicialización vaya contra esa BD
 # y --db-filter la fije para evitar que Odoo “coja” otra por error.
 CMD ["bash","-lc", "\
-  echo '==> Checking/initializing DB $PGDATABASE' && \
   odoo -d $PGDATABASE -i base --without-demo=all \
        --db_host=$PGHOST --db_port=$PGPORT \
        --db_user=$PGUSER --db_password=$PGPASSWORD \
+       --db_sslmode=$PGSSLMODE \
        --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons \
        --stop-after-init || true; \
-  echo '==> Starting Odoo server' && \
   odoo --db_host=$PGHOST --db_port=$PGPORT \
        --db_user=$PGUSER --db_password=$PGPASSWORD \
+       --db_sslmode=$PGSSLMODE \
        --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons \
        --db-filter=$PGDATABASE \
        --dev=all"]
