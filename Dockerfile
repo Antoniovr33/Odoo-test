@@ -9,22 +9,24 @@ EXPOSE 8069
 
 # Puerto por defecto de PostgreSQL
 ENV PGPORT=5432
-
+ENV PGSSLMODE=require
 # 1) Inicializa la BD indicada en $PGDATABASE si está vacía (stop-after-init)
 # 2) Después arranca el servidor normalmente
 #
 # NOTA: usamos $PGDATABASE para que la inicialización vaya contra esa BD
 # y --db-filter la fije para evitar que Odoo “coja” otra por error.
 CMD ["bash","-lc", "\
-  odoo -d $PGDATABASE -i base --without-demo=all \
-       --db_host=$PGHOST --db_port=$PGPORT \
-       --db_user=$PGUSER --db_password=$PGPASSWORD \
-       --db_sslmode=$PGSSLMODE \
-       --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons \
+  echo '==> Init DB $PGDATABASE' && \
+  odoo -d \"$PGDATABASE\" -i base --without-demo=all \
+       --db_host=\"$PGHOST\" --db_port=\"$PGPORT\" \
+       --db_user=\"$PGUSER\" --db_password=\"$PGPASSWORD\" \
+       --db_sslmode=\"$PGSSLMODE\" \
+       --addons-path=\"/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons\" \
        --stop-after-init || true; \
-  odoo --db_host=$PGHOST --db_port=$PGPORT \
-       --db_user=$PGUSER --db_password=$PGPASSWORD \
-       --db_sslmode=$PGSSLMODE \
-       --addons-path=/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons \
-       --db-filter=$PGDATABASE \
-       --dev=all"]
+  echo '==> Start Odoo' && \
+  odoo --db_host=\"$PGHOST\" --db_port=\"$PGPORT\" \
+       --db_user=\"$PGUSER\" --db_password=\"$PGPASSWORD\" \
+       --db_sslmode=\"$PGSSLMODE\" \
+       --addons-path=\"/usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons\" \
+       --db-filter=\"^${PGDATABASE}$\" \
+       --proxy-mode"]
